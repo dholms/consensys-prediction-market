@@ -1,12 +1,15 @@
 pragma solidity ^0.4.12;
 
-contract Question{
+import "./Stoppable.sol";
+
+contract Question is Stoppable{
 
     string  public question;
     uint    public betYesAmount;
     uint    public betNoAmount;
     bool    public isResolved;
     bool    public isYes;
+    address public creator;
 
     mapping(address => Response) public responses;
     mapping(address => bool) public isTrusted;
@@ -20,15 +23,17 @@ contract Question{
     event LogPrediction(address predictor, bool votedYes, uint betAmount);
     event LogResolution(bool resolvedYes);
     event LogWithdrawal(address withdrawer, uint amount);
+    event LogTrustedUserAdded(address newAdmin);
 
-    modifier trustedOnly(){
+    modifier onlyTrusted(){
         require(isTrusted[msg.sender] == true);
         _;
     }
 
-    function Question(string _question){
+    function Question(address _creator,string _question){
+        creator = _creator;
         question = _question;
-        isTrusted[msg.sender] = true;
+        isTrusted[creator] = true;
     }
 
     function predict(bool _isYes) public payable returns(bool success){
@@ -69,7 +74,7 @@ contract Question{
         return true;
     }
 
-    function resolve(bool _isYes) public trustedOnly() returns(bool success){
+    function resolve(bool _isYes) onlyTrusted returns(bool success){
         require(isResolved == false);
         isResolved = true;
         isYes = _isYes;
@@ -77,8 +82,9 @@ contract Question{
         return true;
     }
 
-    function addTrustedUser(address toAdd) public trustedOnly() returns(bool success){
+    function addTrustedUser(address toAdd) onlyTrusted returns(bool success){
         isTrusted[toAdd] = true;
+        LogTrustedUserAdded(toAdd);
         return true;
     }
 }

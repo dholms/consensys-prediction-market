@@ -1,6 +1,7 @@
-var MetaCoin = artifacts.require("./MetaCoin.sol");
+var Owned = artifacts.require("./Owned.sol");
 
-contract('MetaCoin', function(accounts) {
+contract('Owned', function(accounts) {
+  const owner = accounts[0];
   it("should put 10000 MetaCoin in the first account", function() {
     return MetaCoin.deployed().then(function(instance) {
       return instance.getBalance.call(accounts[0]);
